@@ -23,6 +23,10 @@
         
         <!-- Contenido seguro -->
         <div id="contenido-trabajador" style="display: none;">
+            
+            <!-- Etiqueta de Estatus que se actualizará dinámicamente -->
+            <div id="badge-estatus" class="status-activo">ESTATUS: ACTIVO</div>
+
             <!-- Foto del Carnet (Busca carnet-XXX.jpg en la carpeta imagenes) -->
             <img id="foto-carnet" src="" alt="Carnet Oficial">
             
@@ -35,7 +39,7 @@
     </div>
 
     <script>
-        // LISTA MAESTRA DE TOKENS OFICIALES (Clave: CMBG2026)
+        // 1. LISTA MAESTRA DE TOKENS OFICIALES (Clave: CMBG2026)
         const listaTokensValidos = {
             "001": "cd09cb69", "002": "f6a454df", "003": "3f993fdf", "004": "1c89db1f", "005": "fb43b591",
             "006": "90185bf2", "007": "4b301c3e", "008": "bca2132d", "009": "0e327bca", "010": "8ebfca90",
@@ -51,11 +55,25 @@
             "056": "4b90ef23", "057": "fa23bc90", "058": "0c7df4ba", "059": "bc7ea019", "060": "1ad94fbc"
         };
 
-        // BASE DE DATOS DE RESEÑAS (Puedes editar los textos aquí adentro)
+        // =========================================================================
+        // 2. CONTROL DE ESTATUS POR ID (¡Aquí modificas si alguien se va!)
+        // Modifica "Activo" por "Inactivo" para dar de baja a un trabajador.
+        // =========================================================================
+        const estatusTrabajadores = {
+            "001": "Activo",
+            "002": "Activo",
+            "003": "Inactivo", // Ejemplo: El trabajador 003 ya no pertenece a la institución
+            "004": "Activo",
+            "005": "Activo",
+            "018": "Activo",
+            // Puedes seguir agregando los IDs hacia abajo usando la misma estructura...
+        };
+
+        // 3. BASE DE DATOS DE RESEÑAS
         const baseDatosTrabajadores = {
             "001": "Funcionario adscrito a la Dirección de Auditoría Interna. Autorizado para ejercer funciones de control fiscal en el Municipio Bolivariano de Guaicaipuro.",
             "002": "Personal Administrativo de la Oficina de Atención al Ciudadano (OAC). Atención directa al poder popular y comunidades del municipio.",
-            "003": "Personal de la Dirección de Administración y Finanzas. Estatus: Activo de la institución."
+            "003": "Ex-empleado de la Dirección de Administración y Finanzas."
         };
 
         function getQueryParam(param) {
@@ -69,35 +87,49 @@
         const contenidoDiv = document.getElementById('contenido-trabajador');
         const imgElement = document.getElementById('foto-carnet');
         const resenaElement = document.getElementById('resena-texto');
+        const badgeEstatus = document.getElementById('badge-estatus');
 
         if (id && tokenRecibido) {
             
             const tokenCorrecto = listaTokensValidos[id];
 
-            // VALIDACIÓN DIRECTA
+            // VALIDACIÓN DE SEGURIDAD DEL TOKEN
             if (tokenCorrecto && tokenRecibido.trim().toLowerCase() === tokenCorrecto.toLowerCase()) {
                 
-                // CAMBIO AQUÍ: Ahora busca la extensión .jpg
-                // RECUERDA: Tus imágenes deben guardarse como carnet-001.jpg en minúsculas
-                const rutaImagen = `imagenes/carnet-${id}.jpg`; 
-                imgElement.src = rutaImagen;
+                // VALIDACIÓN DE ESTATUS (Por defecto si no está anotado asumimos Activo)
+                const estatusActual = estatusTrabajadores[id] ? estatusTrabajadores[id] : "Activo";
 
-                imgElement.onload = function() {
-                    statusElement.style.display = 'none';
-                    contenidoDiv.style.display = 'block';
-                    
-                    // Asigna la reseña
-                    if (baseDatosTrabajadores[id]) {
-                        resenaElement.innerText = baseDatosTrabajadores[id];
-                    } else {
-                        resenaElement.innerText = "Funcionario activo adscrito a la Contraloría del Municipio Bolivariano de Guaicaipuro (CMBG). Datos validados por la dirección de recursos humanos.";
-                    }
-                };
-
-                imgElement.onerror = function() {
-                    statusElement.innerText = "⚠️ ERROR: La foto del carnet (carnet-" + id + ".jpg) no está dentro de la carpeta 'imagenes'.";
+                if (estatusActual === "Inactivo") {
+                    // Si está Inactivo, bloqueamos la visualización y mostramos alerta
+                    statusElement.innerHTML = "⚠️ <strong>ATENCIÓN / PERSONAL RETIRADO:</strong><br>El ciudadano portador de esta credencial ya NO LABORA en la Contraloría Municipal de Guaicaipuro.";
                     statusElement.style.color = "#d32f2f";
-                };
+                    document.body.style.backgroundColor = "#fff3e0"; // Fondo de advertencia naranja suave
+                } else {
+                    // Si está Activo, procedemos a cargar los datos normalmente
+                    const rutaImagen = `imagenes/carnet-${id}.jpg`; 
+                    imgElement.src = rutaImagen;
+
+                    imgElement.onload = function() {
+                        statusElement.style.display = 'none';
+                        contenidoDiv.style.display = 'block';
+                        
+                        // Configurar el aviso visual de Activo
+                        badgeEstatus.innerText = "ESTATUS: ACTIVO";
+                        badgeEstatus.className = "status-activo";
+
+                        // Asigna la reseña
+                        if (baseDatosTrabajadores[id]) {
+                            resenaElement.innerText = baseDatosTrabajadores[id];
+                        } else {
+                            resenaElement.innerText = "Funcionario activo adscrito a la Contraloría del Municipio Bolivariano de Guaicaipuro (CMBG). Datos validados por la dirección de recursos humanos.";
+                        }
+                    };
+
+                    imgElement.onerror = function() {
+                        statusElement.innerText = "⚠️ ERROR: La foto del carnet (carnet-" + id + ".jpg) no está dentro de la carpeta 'imagenes'.";
+                        statusElement.style.color = "#d32f2f";
+                    };
+                }
 
             } else {
                 statusElement.innerHTML = "🚫 <strong>ALERTA DE SEGURIDAD:</strong><br>Este carnet es INVÁLIDO o ha sido alterado digitalmente.";
