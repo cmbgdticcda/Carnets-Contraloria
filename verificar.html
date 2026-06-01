@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Identidad</title>
+    <link rel="stylesheet" href="carnet.css">
+</head>
+<body>
+
+    <div class="contenedor">
+        <h2>Sistema de Verificación</h2>
+        <div id="status-message">Cargando información del trabajador...</div>
+        <img id="foto-carnet" src="" alt="Carnet del Trabajador" style="display: none;">
+    </div>
+
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const trabajadorId = getQueryParam('id');
+        const imgElement = document.getElementById('foto-carnet');
+        const statusElement = document.getElementById('status-message');
+
+        if (trabajadorId) {
+            // Si tus imágenes son .jpg, cambia el ".png" de abajo por ".jpg"
+            const rutaImagen = `imagenes/carnet-${trabajadorId}.png`; 
+
+            imgElement.src = rutaImagen;
+            
+            imgElement.onload = function() {
+                statusElement.style.display = 'none';
+                imgElement.style.display = 'block';
+            };
+
+            imgElement.onerror = function() {
+                statusElement.innerText = "Error: El carnet del trabajador no existe.";
+                statusElement.style.color = "red";
+            };
+        } else {
+            statusElement.innerText = "Error: Código de verificación inválido.";
+            statusElement.style.color = "red";
+        }
+    </script>
+</body>
+</html>
