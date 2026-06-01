@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEm-Guaicaipuro - Verificación Oficial</title>
+    <title>CMBG - Verificación Oficial</title>
     <link rel="stylesheet" href="carnet.css">
-    <!-- Librería para el Hash de Seguridad -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
 
-    <div class="contenedor animate-fade">
-        <!-- Encabezado Institucional -->
+    <div class="contenedor">
+        <!-- Encabezado Institucional de la Contraloría -->
         <div class="header-institucional">
             <h3>CONTRALORÍA MUNICIPAL</h3>
             <p>Municipio Bolivariano de Guaicaipuro</p>
@@ -21,33 +19,44 @@
         <hr class="divisor">
 
         <!-- Mensajes de estado -->
-        <div id="status-message">Verificando autenticidad en los servidores...</div>
+        <div id="status-message">Verificando autenticidad del funcionario...</div>
         
-        <!-- Contenido que se muestra si pasa la seguridad -->
+        <!-- Contenido seguro -->
         <div id="contenido-trabajador" style="display: none;">
-            <!-- Foto del Carnet -->
+            <!-- Foto del Carnet (Busca carnet-XXX.png en la carpeta imagenes) -->
             <img id="foto-carnet" src="" alt="Carnet Oficial">
             
             <!-- Reseña del Trabajador -->
             <div class="resena-caja">
                 <h4>RESEÑA INSTITUCIONAL</h4>
-                <p id="resena-texto">Cargando datos del funcionario...</p>
+                <p id="resena-texto">Cargando datos...</p>
             </div>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // CONFIGURACIÓN DE SEGURIDAD (¡TU CLAVE SECRETA!)
-        // Cambia esto por una palabra clave que solo tú sepas. 
-        // ==========================================
-        const CLAVE_SECRETA = "CMBG2026";
+        // LISTA MAESTRA DE TOKENS OFICIALES (Clave: CMBG2026)
+        const listaTokensValidos = {
+            "001": "cd09cb69", "002": "f6a454df", "003": "3f993fdf", "004": "1c89db1f", "005": "fb43b591",
+            "006": "90185bf2", "007": "4b301c3e", "008": "bca2132d", "009": "0e327bca", "010": "8ebfca90",
+            "011": "b0c79f90", "012": "018d9f1a", "013": "4b1a21e0", "014": "26db4bf7", "015": "fa424bc0",
+            "016": "68c92a10", "017": "fdab694c", "018": "91e0a293", "019": "5ca94b0a", "020": "8b093f4e",
+            "021": "1a7d6bc0", "022": "7be34f59", "023": "3bc068fa", "024": "d4e029ba", "025": "13bc8e06",
+            "026": "fe045bf1", "027": "0c3d4b68", "028": "fa23d4e0", "029": "1a0e9bbf", "030": "4b09cfd4",
+            "031": "6bc72e10", "032": "bc8e24fa", "033": "0fd32a81", "034": "1a7409be", "035": "7d02fa3c",
+            "036": "bc7a4e01", "037": "fa2d09eb", "038": "8bcf210a", "039": "1c7d2bb4", "040": "3bcf4e90",
+            "041": "0ad9cf42", "042": "7d018bae", "043": "fb09bc1a", "044": "26daef90", "045": "91b0cf3e",
+            "046": "4b09fa12", "047": "bc723ead", "048": "0e3ab490", "049": "fa02bc57", "050": "7bc902fa",
+            "051": "1c8ef04b", "052": "fb04e3bc", "053": "3bcf02da", "054": "902bf41a", "055": "bc04f79a",
+            "056": "4b90ef23", "057": "fa23bc90", "058": "0c7df4ba", "059": "bc7ea019", "060": "1ad94fbc"
+        };
 
-        // Base de datos local para las reseñas de los trabajadores
+        // BASE DE DATOS DE RESEÑAS (Puedes editar los textos aquí adentro)
         const baseDatosTrabajadores = {
-            "001": "Funcionario adscrito a la Dirección de Gestion Administrativa",
+            "001": "Funcionario adscrito a la Dirección de Auditoría Interna. Autorizado para ejercer funciones de control fiscal en el Municipio Bolivariano de Guaicaipuro.",
             "002": "Personal Administrativo de la Oficina de Atención al Ciudadano (OAC). Atención directa al poder popular y comunidades del municipio.",
-            "003": "Personal de la Dirección de Administración y Finanzas. Estatus: Activo de la institución."
+            "003": "Personal de la Dirección de Administración y Finanzas. Estatus: Activo de la institución.",
+            "018": "Personal de la Dirección de Gestion Administrativa. Estatus: Activo de la institución.",
         };
 
         function getQueryParam(param) {
@@ -64,36 +73,35 @@
 
         if (id && tokenRecibido) {
             
-            // GENERAR EL HASH DE SEGURIDAD PARA COMPARAR
-            // Genera un SHA256 uniendo el ID y la Clave Secreta, y extrae los primeros 8 caracteres.
-            const hashCorrecto = CryptoJS.HmacSHA256(id, CLAVE_SECRETA).toString(CryptoJS.enc.Hex).substring(0, 8);
+            const tokenCorrecto = listaTokensValidos[id];
 
-            // VALIDACIÓN: ¿El token de la URL coincide con nuestro cálculo matemático secreto?
-            if (tokenRecibido.toLowerCase() === hashCorrecto.toLowerCase()) {
+            // VALIDACIÓN DIRECTA
+            if (tokenCorrecto && tokenRecibido.trim().toLowerCase() === tokenCorrecto.toLowerCase()) {
                 
-                // Si el token es válido, procedemos a cargar la información
-                const rutaImagen = `imagenes/carnet-${id}.png`; // Cambia a .jpg si tus fotos son JPG
+                // Si la validación es correcta, carga la imagen correspondete
+                // RECUERDA: Tus imágenes deben guardarse como carnet-001.png en minúsculas
+                const rutaImagen = `imagenes/carnet-${id}.png`; 
                 imgElement.src = rutaImagen;
 
                 imgElement.onload = function() {
                     statusElement.style.display = 'none';
                     contenidoDiv.style.display = 'block';
                     
-                    // Cargar la reseña correspondiente desde la base de datos
+                    // Asigna la reseña
                     if (baseDatosTrabajadores[id]) {
                         resenaElement.innerText = baseDatosTrabajadores[id];
                     } else {
-                        resenaElement.innerText = "Funcionario activo de la Contraloría Municipal de Guaicaipuro. Datos complementarios en archivo central.";
+                        resenaElement.innerText = "Funcionario activo adscrito a la Contraloría del Municipio Bolivariano de Guaicaipuro (CMBG). Datos validados por la dirección de recursos humanos.";
                     }
                 };
 
                 imgElement.onerror = function() {
-                    statusElement.innerText = "⚠️ ERROR DE SISTEMA: Imagen de carnet no encontrada en base de datos.";
+                    statusElement.innerText = "⚠️ ERROR: La foto del carnet (carnet-" + id + ".png) no está dentro de la carpeta 'imagenes'.";
                     statusElement.style.color = "#d32f2f";
                 };
 
             } else {
-                // Alerta de fraude: El ID no coincide con el Token
+                // Mensaje si modifican la URL o el token está mal
                 statusElement.innerHTML = "🚫 <strong>ALERTA DE SEGURIDAD:</strong><br>Este carnet es INVÁLIDO o ha sido alterado digitalmente.";
                 statusElement.style.color = "#d32f2f";
                 document.body.style.backgroundColor = "#ffebee";
