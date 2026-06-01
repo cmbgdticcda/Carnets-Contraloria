@@ -23,7 +23,7 @@
         
         <!-- Contenido seguro -->
         <div id="contenido-trabajador" style="display: none;">
-            <!-- Foto del Carnet (Busca carnet-XXX.png en la carpeta imagenes) -->
+            <!-- Foto del Carnet (Busca carnet-XXX.jpg en la carpeta imagenes) -->
             <img id="foto-carnet" src="" alt="Carnet Oficial">
             
             <!-- Reseña del Trabajador -->
@@ -55,8 +55,7 @@
         const baseDatosTrabajadores = {
             "001": "Funcionario adscrito a la Dirección de Auditoría Interna. Autorizado para ejercer funciones de control fiscal en el Municipio Bolivariano de Guaicaipuro.",
             "002": "Personal Administrativo de la Oficina de Atención al Ciudadano (OAC). Atención directa al poder popular y comunidades del municipio.",
-            "003": "Personal de la Dirección de Administración y Finanzas. Estatus: Activo de la institución.",
-            "018": "Personal de la Dirección de Gestion Administrativa. Estatus: Activo de la institución.",
+            "003": "Personal de la Dirección de Administración y Finanzas. Estatus: Activo de la institución."
         };
 
         function getQueryParam(param) {
@@ -78,9 +77,9 @@
             // VALIDACIÓN DIRECTA
             if (tokenCorrecto && tokenRecibido.trim().toLowerCase() === tokenCorrecto.toLowerCase()) {
                 
-                // Si la validación es correcta, carga la imagen correspondete
-                // RECUERDA: Tus imágenes deben guardarse como carnet-001.png en minúsculas
-                const rutaImagen = `imagenes/carnet-${id}.png`; 
+                // CAMBIO AQUÍ: Ahora busca la extensión .jpg
+                // RECUERDA: Tus imágenes deben guardarse como carnet-001.jpg en minúsculas
+                const rutaImagen = `imagenes/carnet-${id}.jpg`; 
                 imgElement.src = rutaImagen;
 
                 imgElement.onload = function() {
@@ -96,12 +95,11 @@
                 };
 
                 imgElement.onerror = function() {
-                    statusElement.innerText = "⚠️ ERROR: La foto del carnet (carnet-" + id + ".png) no está dentro de la carpeta 'imagenes'.";
+                    statusElement.innerText = "⚠️ ERROR: La foto del carnet (carnet-" + id + ".jpg) no está dentro de la carpeta 'imagenes'.";
                     statusElement.style.color = "#d32f2f";
                 };
 
             } else {
-                // Mensaje si modifican la URL o el token está mal
                 statusElement.innerHTML = "🚫 <strong>ALERTA DE SEGURIDAD:</strong><br>Este carnet es INVÁLIDO o ha sido alterado digitalmente.";
                 statusElement.style.color = "#d32f2f";
                 document.body.style.backgroundColor = "#ffebee";
