@@ -3,45 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificación de Identidad</title>
+    <title>CEm-Guaicaipuro - Verificación Oficial</title>
     <link rel="stylesheet" href="carnet.css">
+    <!-- Librería para el Hash de Seguridad -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
 
-    <div class="contenedor">
-        <h2>Sistema de Verificación</h2>
-        <div id="status-message">Cargando información del trabajador...</div>
-        <img id="foto-carnet" src="" alt="Carnet del Trabajador" style="display: none;">
+    <div class="contenedor animate-fade">
+        <!-- Encabezado Institucional -->
+        <div class="header-institucional">
+            <h3>CONTRALORÍA MUNICIPAL</h3>
+            <p>Municipio Bolivariano de Guaicaipuro</p>
+            <div class="badge-oficial">✓ ÓRGANO DE CONTROL FISCAL</div>
+        </div>
+        
+        <hr class="divisor">
+
+        <!-- Mensajes de estado -->
+        <div id="status-message">Verificando autenticidad en los servidores...</div>
+        
+        <!-- Contenido que se muestra si pasa la seguridad -->
+        <div id="contenido-trabajador" style="display: none;">
+            <!-- Foto del Carnet -->
+            <img id="foto-carnet" src="" alt="Carnet Oficial">
+            
+            <!-- Reseña del Trabajador -->
+            <div class="resena-caja">
+                <h4>RESEÑA INSTITUCIONAL</h4>
+                <p id="resena-texto">Cargando datos del funcionario...</p>
+            </div>
+        </div>
     </div>
 
     <script>
+        // ==========================================
+        // CONFIGURACIÓN DE SEGURIDAD (¡TU CLAVE SECRETA!)
+        // Cambia esto por una palabra clave que solo tú sepas. 
+        // ==========================================
+        const CLAVE_SECRETA = "ContraloriaGuaicaipuro2026*";
+
+        // Base de datos local para las reseñas de los trabajadores
+        const baseDatosTrabajadores = {
+            "001": "Funcionario adscrito a la Dirección de Auditoría Interna. Autorizado para ejercer funciones de control fiscal en el Municipio Bolivariano de Guaicaipuro.",
+            "002": "Personal Administrativo de la Oficina de Atención al Ciudadano (OAC). Atención directa al poder popular y comunidades del municipio.",
+            "003": "Personal de la Dirección de Administración y Finanzas. Estatus: Activo de la institución."
+        };
+
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param);
         }
 
-        const trabajadorId = getQueryParam('id');
-        const imgElement = document.getElementById('foto-carnet');
+        const id = getQueryParam('id');
+        const tokenRecibido = getQueryParam('token');
         const statusElement = document.getElementById('status-message');
+        const contenidoDiv = document.getElementById('contenido-trabajador');
+        const imgElement = document.getElementById('foto-carnet');
+        const resenaElement = document.getElementById('resena-texto');
 
-        if (trabajadorId) {
-            // Si tus imágenes son .jpg, cambia el ".png" de abajo por ".jpg"
-            const rutaImagen = `imagenes/carnet-${trabajadorId}.jpg`; 
-
-            imgElement.src = rutaImagen;
+        if (id && tokenRecibido) {
             
-            imgElement.onload = function() {
-                statusElement.style.display = 'none';
-                imgElement.style.display = 'block';
-            };
+            // GENERAR EL HASH DE SEGURIDAD PARA COMPARAR
+            // Genera un SHA256 uniendo el ID y la Clave Secreta, y extrae los primeros 8 caracteres.
+            const hashCorrecto = CryptoJS.HmacSHA256(id, CLAVE_SECRETA).toString(CryptoJS.enc.Hex).substring(0, 8);
 
-            imgElement.onerror = function() {
-                statusElement.innerText = "Error: El carnet del trabajador no existe.";
-                statusElement.style.color = "red";
-            };
+            // VALIDACIÓN: ¿El token de la URL coincide con nuestro cálculo matemático secreto?
+            if (tokenRecibido.toLowerCase() === hashCorrecto.toLowerCase()) {
+                
+                // Si el token es válido, procedemos a cargar la información
+                const rutaImagen = `imagenes/carnet-${id}.png`; // Cambia a .jpg si tus fotos son JPG
+                imgElement.src = rutaImagen;
+
+                imgElement.onload = function() {
+                    statusElement.style.display = 'none';
+                    contenidoDiv.style.display = 'block';
+                    
+                    // Cargar la reseña correspondiente desde la base de datos
+                    if (baseDatosTrabajadores[id]) {
+                        resenaElement.innerText = baseDatosTrabajadores[id];
+                    } else {
+                        resenaElement.innerText = "Funcionario activo de la Contraloría Municipal de Guaicaipuro. Datos complementarios en archivo central.";
+                    }
+                };
+
+                imgElement.onerror = function() {
+                    statusElement.innerText = "⚠️ ERROR DE SISTEMA: Imagen de carnet no encontrada en base de datos.";
+                    statusElement.style.color = "#d32f2f";
+                };
+
+            } else {
+                // Alerta de fraude: El ID no coincide con el Token
+                statusElement.innerHTML = "🚫 <strong>ALERTA DE SEGURIDAD:</strong><br>Este carnet es INVÁLIDO o ha sido alterado digitalmente.";
+                statusElement.style.color = "#d32f2f";
+                document.body.style.backgroundColor = "#ffebee";
+            }
         } else {
-            statusElement.innerText = "Error: Código de verificación inválido.";
-            statusElement.style.color = "red";
+            statusElement.innerText = "⚠️ Acceso denegado. Código de verificación incompleto.";
+            statusElement.style.color = "#d32f2f";
         }
     </script>
 </body>
